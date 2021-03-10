@@ -1,13 +1,14 @@
 type t = {
   id: string,
   name: string,
-  color: string
+  color: string,
 };
 
-module RoomMap = Map.Make({
-  type t = string;
-  let compare = compare;
-});
+module RoomMap =
+  Map.Make({
+    type t = string;
+    let compare = compare;
+  });
 
 type by_room_id = RoomMap.t(t);
 
@@ -21,35 +22,34 @@ let uniqRooms = (room_id, rooms) => {
 };
 
 let upsertRoom = (room_id, name, color, rooms) => {
-  let room = { id: room_id, name, color };
+  let room = {id: room_id, name, color};
   RoomMap.add(room_id, room, rooms);
 };
 
-let getRoomName = (room_id, rooms) => {
-  try(RoomMap.find(room_id, rooms).name) {
+let getRoomName = (room_id, rooms) =>
+  try (RoomMap.find(room_id, rooms).name) {
   | Not_found => "Unknown Room"
-  }
-};
+  };
 
-let getRoomColor = (room_id, rooms) => {
-  try(RoomMap.find(room_id, rooms).color) {
+let getRoomColor = (room_id, rooms) =>
+  try (RoomMap.find(room_id, rooms).color) {
   | Not_found => "green"
-  }
-};
+  };
 
 let roomClassName = (room_id_opt, rooms) => {
-  let color = switch (room_id_opt) {
-  | Some(room_id) =>
-    try(RoomMap.find(room_id, rooms).color) {
-    | Not_found => "green"
-    }
-  | None => "green"
-  };
+  let color =
+    switch (room_id_opt) {
+    | Some(room_id) =>
+      try (RoomMap.find(room_id, rooms).color) {
+      | Not_found => "green"
+      }
+    | None => "green"
+    };
   "p-rooms p-rooms--" ++ color;
 };
 
 let byId = (room_id, rooms) =>
-  try(Some(RoomMap.find(room_id, rooms))) {
+  try (Some(RoomMap.find(room_id, rooms))) {
   | Not_found => None
   };
 

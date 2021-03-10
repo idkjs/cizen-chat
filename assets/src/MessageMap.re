@@ -1,4 +1,5 @@
-module MessageMap = Map.Make({
-  type t = string;
-  let compare = compare;
-});
+module MessageMap =
+  Map.Make({
+    type t = string;
+    let compare = compare;
+  });
