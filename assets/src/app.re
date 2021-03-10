@@ -1,3 +1,4 @@
+
 open Phx;
 open MessageMap;
 
@@ -42,7 +43,10 @@ type action =
   | UpdateText(string);
 
 let component = ReasonReact.reducerComponent("App");
-
+let renderRoomList = (~title,~rooms,~handleSelect) =>RoomList.make(
+                ~title,
+                ~rooms,
+                ~handleSelect);
 let make = _children => {
   ...component,
   initialState: () => Connecting,
@@ -227,11 +231,11 @@ let make = _children => {
                 (ReasonReact.string("Create Room"))
               </button>
 
-              <RoomList
-                title="Available Rooms"
-                rooms=(Room.byIds(subtract(available, entered), rooms))
-                handleSelect=(room => RoomEnter(room) |> self.send)
-              />
+              {RoomList.make(
+                ~title="Available Rooms"
+                ~rooms=(Room.byIds(subtract(available, entered), rooms))
+                ~handleSelect=(room => RoomEnter(room) |> self.send));}
+
 
               <RoomList
                 title="Joined Rooms"
@@ -262,7 +266,7 @@ let make = _children => {
             </div>
             <div className="c-text-area-wrapper">
               <div className="c-text-area">
-                <textarea 
+                <textarea
                   rows=1
                   placeholder="What's up?"
                   value=text

@@ -1,8 +1,6 @@
-let component = ReasonReact.statelessComponent("RoomList");
 
-let make = (~title, ~rooms, ~handleSelect, _children) => {
-  ...component,
-  render: self => {
+[@react.component]
+let make = (~title, ~rooms, ~handleSelect) => {
     <div className="c-list">
       <div className="c-list-header">(ReasonReact.string(title))</div>
       <div className="c-list-body">
@@ -21,5 +19,4 @@ let make = (~title, ~rooms, ~handleSelect, _children) => {
         )
       </div>
     </div>;
-  },
 };
