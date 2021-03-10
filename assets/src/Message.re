@@ -16,6 +16,6 @@ let addMsg = (avatar_id, room, body, map) => {
 };
 
 let getMsg = (room, map) =>
-  try (MessageMap.find(room, map)) {
+  try(MessageMap.find(room, map)) {
   | Not_found => [||]
   };

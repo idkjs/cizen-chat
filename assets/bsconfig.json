@@ -1,25 +1,31 @@
 {
   "name": "cizen-chat",
-  "sources": {
-    "dir": "src",
-    "subdirs": true
-  },
-  "package-specs": {
-    "module": "commonjs",
-    "in-source": true
-  },
-  "suffix": ".bs.js",
+    "version": "0.0.0",
   "bs-dependencies": [
     "reason-react",
     "bucklescript-phx",
     "@glennsl/bs-json"
   ],
-  "warnings": {
-    "error": "+101"
-  },
   "namespace": true,
   "refmt": 3,
   "reason": {
     "react-jsx": 3
-  }
+  },
+  "bsc-flags": ["-bs-super-errors"],
+  "sources": [
+    {
+      "dir": "src",
+      "subdirs": true
+    }
+  ],
+  "package-specs": {
+    "module": "commonjs",
+    "in-source": true
+  },
+  "suffix": ".bs.js",
+  "warnings": {
+    "number": "+A-42-48",
+    "error": "+A-3-44-102-103"
+  },
+  "ppx-flags": []
 }

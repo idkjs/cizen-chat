@@ -27,12 +27,12 @@ let upsertRoom = (room_id, name, color, rooms) => {
 };
 
 let getRoomName = (room_id, rooms) =>
-  try (RoomMap.find(room_id, rooms).name) {
+  try(RoomMap.find(room_id, rooms).name) {
   | Not_found => "Unknown Room"
   };
 
 let getRoomColor = (room_id, rooms) =>
-  try (RoomMap.find(room_id, rooms).color) {
+  try(RoomMap.find(room_id, rooms).color) {
   | Not_found => "green"
   };
 
@@ -40,7 +40,7 @@ let roomClassName = (room_id_opt, rooms) => {
   let color =
     switch (room_id_opt) {
     | Some(room_id) =>
-      try (RoomMap.find(room_id, rooms).color) {
+      try(RoomMap.find(room_id, rooms).color) {
       | Not_found => "green"
       }
     | None => "green"
@@ -49,7 +49,7 @@ let roomClassName = (room_id_opt, rooms) => {
 };
 
 let byId = (room_id, rooms) =>
-  try (Some(RoomMap.find(room_id, rooms))) {
+  try(Some(RoomMap.find(room_id, rooms))) {
   | Not_found => None
   };
 

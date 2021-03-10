@@ -49,37 +49,34 @@ let make = _children => {
     switch (action) {
     | Connect =>
       ReasonReact.SideEffects(
-        (
-          self => {
-            let socket = initSocket("/socket") |> connectSocket;
-            let channel = socket |> initChannel("lounge:hello");
-            let _ =
-              channel
-              |> putOn("room:message", (res: Abstract.any) => {
-                   let {source, room_id, body}: Decode.message =
-                     Decode.receive(res);
-                   self.send(Receive(source, room_id, body));
-                 })
-              |> putOn("room:setting", (res: Abstract.any) => {
-                   let {room_id, name, color}: Decode.setting =
-                     Decode.setting(res);
-                   self.send(ReceiveRoomSetting(room_id, name, color));
-                 })
-              |> putOn("avatar:profile", (res: Abstract.any) => {
-                   let {avatar_id, name}: Decode.profile =
-                     Decode.profile(res);
-                   self.send(ReceiveAvatarProfile(avatar_id, name));
-                 })
-              |> joinChannel
-              |> putReceive("ok", (res: Abstract.any) => {
-                   let welcome: Decode.welcome = Decode.welcome(res);
-                   self.send(
-                     Connected(welcome.id, welcome.name, socket, channel),
-                   );
-                 });
-            ();
-          }
-        ),
+        self => {
+          let socket = initSocket("/socket") |> connectSocket;
+          let channel = socket |> initChannel("lounge:hello");
+          let _ =
+            channel
+            |> putOn("room:message", (res: Abstract.any) => {
+                 let {source, room_id, body}: Decode.message =
+                   Decode.receive(res);
+                 self.send(Receive(source, room_id, body));
+               })
+            |> putOn("room:setting", (res: Abstract.any) => {
+                 let {room_id, name, color}: Decode.setting =
+                   Decode.setting(res);
+                 self.send(ReceiveRoomSetting(room_id, name, color));
+               })
+            |> putOn("avatar:profile", (res: Abstract.any) => {
+                 let {avatar_id, name}: Decode.profile = Decode.profile(res);
+                 self.send(ReceiveAvatarProfile(avatar_id, name));
+               })
+            |> joinChannel
+            |> putReceive("ok", (res: Abstract.any) => {
+                 let welcome: Decode.welcome = Decode.welcome(res);
+                 self.send(
+                   Connected(welcome.id, welcome.name, socket, channel),
+                 );
+               });
+          ();
+        },
       )
     | Connected(id, name, socket, channel) =>
       ReasonReact.Update(
@@ -98,25 +95,23 @@ let make = _children => {
       )
     | Send =>
       ReasonReact.SideEffects(
-        (
-          self =>
-            switch (self.state) {
-            | Ready({id, channel, text, selected}) =>
-              switch (selected) {
-              | Some(room) =>
-                push(
-                  "room:message",
-                  {"source": id, "room_id": room, "body": text},
-                  channel,
-                )
-                |> ignore;
-                self.send(Receive(id, room, text));
-                self.send(UpdateText(""));
-              | None => ()
-              }
-            | _ => ()
+        self =>
+          switch (self.state) {
+          | Ready({id, channel, text, selected}) =>
+            switch (selected) {
+            | Some(room) =>
+              push(
+                "room:message",
+                {"source": id, "room_id": room, "body": text},
+                channel,
+              )
+              |> ignore;
+              self.send(Receive(id, room, text));
+              self.send(UpdateText(""));
+            | None => ()
             }
-        ),
+          | _ => ()
+          },
       )
     | Receive(source, room_id, body) =>
       switch (state) {
@@ -131,21 +126,19 @@ let make = _children => {
       }
     | RoomCreate =>
       ReasonReact.SideEffects(
-        (
-          self =>
-            switch (self.state) {
-            | Ready({id, channel}) =>
-              push("room:create", {"source": id}, channel)
-              |> putReceive("ok", (res: Abstract.any) => {
-                   let {room_id, name, color}: Decode.setting =
-                     Decode.setting(res);
-                   self.send(RoomCreated(room_id, name, color));
-                 })
-              |> ignore;
-              ();
-            | _ => ()
-            }
-        ),
+        self =>
+          switch (self.state) {
+          | Ready({id, channel}) =>
+            push("room:create", {"source": id}, channel)
+            |> putReceive("ok", (res: Abstract.any) => {
+                 let {room_id, name, color}: Decode.setting =
+                   Decode.setting(res);
+                 self.send(RoomCreated(room_id, name, color));
+               })
+            |> ignore;
+            ();
+          | _ => ()
+          },
       )
     | RoomCreated(room_id, name, color) =>
       switch (state) {
@@ -195,39 +188,32 @@ let make = _children => {
       }
     | SendRoomSetting(name_opt, color_opt) =>
       ReasonReact.SideEffects(
-        (
-          self =>
-            switch (self.state) {
-            | Ready({id, channel, rooms, selected}) =>
-              switch (selected) {
-              | Some(room) =>
-                let name =
-                  switch (name_opt) {
-                  | Some(name) => name
-                  | None => Room.getRoomName(room, rooms)
-                  };
-                let color =
-                  switch (color_opt) {
-                  | Some(color) => color
-                  | None => Room.getRoomColor(room, rooms)
-                  };
-                push(
-                  "room:setting",
-                  {
-                    "source": id,
-                    "room_id": room,
-                    "name": name,
-                    "color": color,
-                  },
-                  channel,
-                )
-                |> ignore;
-                self.send(ReceiveRoomSetting(room, name, color));
-              | None => ()
-              }
-            | _ => ()
+        self =>
+          switch (self.state) {
+          | Ready({id, channel, rooms, selected}) =>
+            switch (selected) {
+            | Some(room) =>
+              let name =
+                switch (name_opt) {
+                | Some(name) => name
+                | None => Room.getRoomName(room, rooms)
+                };
+              let color =
+                switch (color_opt) {
+                | Some(color) => color
+                | None => Room.getRoomColor(room, rooms)
+                };
+              push(
+                "room:setting",
+                {"source": id, "room_id": room, "name": name, "color": color},
+                channel,
+              )
+              |> ignore;
+              self.send(ReceiveRoomSetting(room, name, color));
+            | None => ()
             }
-        ),
+          | _ => ()
+          },
       )
     | ReceiveAvatarProfile(avatar_id, name) =>
       switch (state) {
@@ -236,16 +222,14 @@ let make = _children => {
       }
     | SendAvatarProfile(name) =>
       ReasonReact.SideEffects(
-        (
-          self =>
-            switch (self.state) {
-            | Ready({id, channel}) =>
-              push("avatar:profile", {"source": id, "name": name}, channel)
-              |> ignore;
-              self.send(ReceiveAvatarProfile(id, name));
-            | _ => ()
-            }
-        ),
+        self =>
+          switch (self.state) {
+          | Ready({id, channel}) =>
+            push("avatar:profile", {"source": id, "name": name}, channel)
+            |> ignore;
+            self.send(ReceiveAvatarProfile(id, name));
+          | _ => ()
+          },
       )
     | UpdateText(input) =>
       switch (state) {
@@ -256,111 +240,98 @@ let make = _children => {
     },
   render: self =>
     <div className="p-container">
-      (
-        switch (self.state) {
-        | Ready({name, rooms, available, entered, messages, text, selected}) =>
-          <>
-            <div className=(Room.roomClassName(selected, rooms))>
-              <header className="c-header">
-                (React.string("CizenChat"))
-              </header>
-              <div className="p-side-content">
-                <InPlaceEdit
-                  name="user"
-                  text=name
-                  handleChange=(
-                    value => SendAvatarProfile(value) |> self.send
-                  )
-                />
-                <button
-                  className="c-button"
-                  onClick=(_event => RoomCreate |> self.send)>
-                  (React.string("Create Room"))
-                </button>
-                <RoomList
-                  title="Available Rooms"
-                  rooms=(Room.byIds(subtract(available, entered), rooms))
-                  handleSelect=(room => RoomEnter(room) |> self.send)
-                />
-                <RoomList
-                  title="Joined Rooms"
-                  rooms=(Room.byIds(entered, rooms))
-                  handleSelect=(room => RoomSelect(room) |> self.send)
-                />
-              </div>
-            </div>
-            <div className="p-chat">
-              <div className="c-chat">
-                (
-                  switch (selected) {
-                  | Some(room) =>
-                    <>
-                      <div className="c-chat-header">
-                        <InPlaceEdit
-                          name="room-title"
-                          text=(Room.getRoomName(room, rooms))
-                          handleChange=(
-                            value =>
-                              SendRoomSetting(Some(value), None) |> self.send
-                          )
-                        />
-                        <ThemeChanger
-                          handleChange=(
-                            color =>
-                              SendRoomSetting(None, Some(color)) |> self.send
-                          )
-                        />
-                      </div>
-                      <MessageList
-                        messages=(Message.getMsg(room, messages))
-                      />
-                    </>
-                  | None => <p> (React.string("Select or create a room")) </p>
-                  }
-                )
-              </div>
-              <div className="c-text-area-wrapper">
-                <div className="c-text-area">
-                  <textarea
-                    rows=1
-                    placeholder="What's up?"
-                    value=text
-                    onKeyDown=(
-                      event =>
-                        if (ReactEvent.Keyboard.keyCode(event) === 13) {
-                          ReactEvent.Keyboard.preventDefault(event);
-                          self.send(Send);
+      {switch (self.state) {
+       | Ready({name, rooms, available, entered, messages, text, selected}) =>
+         <>
+           <div className={Room.roomClassName(selected, rooms)}>
+             <header className="c-header">
+               {React.string("CizenChat")}
+             </header>
+             <div className="p-side-content">
+               <InPlaceEdit
+                 name="user"
+                 text=name
+                 handleChange={value => SendAvatarProfile(value) |> self.send}
+               />
+               <button
+                 className="c-button"
+                 onClick={_event => RoomCreate |> self.send}>
+                 {React.string("Create Room")}
+               </button>
+               <RoomList
+                 title="Available Rooms"
+                 rooms={Room.byIds(subtract(available, entered), rooms)}
+                 handleSelect={room => RoomEnter(room) |> self.send}
+               />
+               <RoomList
+                 title="Joined Rooms"
+                 rooms={Room.byIds(entered, rooms)}
+                 handleSelect={room => RoomSelect(room) |> self.send}
+               />
+             </div>
+           </div>
+           <div className="p-chat">
+             <div className="c-chat">
+               {switch (selected) {
+                | Some(room) =>
+                  <>
+                    <div className="c-chat-header">
+                      <InPlaceEdit
+                        name="room-title"
+                        text={Room.getRoomName(room, rooms)}
+                        handleChange={value =>
+                          SendRoomSetting(Some(value), None) |> self.send
                         }
-                    )
-                    onChange=(
-                      event =>
-                        self.send(
-                          UpdateText(ReactEvent.Form.target(event)##value),
-                        )
-                    )
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="p-avatars" />
-          </>
-        | _ => <div> (React.string("Connecting...")) </div>
-        }
-      )
+                      />
+                      <ThemeChanger
+                        handleChange={color =>
+                          SendRoomSetting(None, Some(color)) |> self.send
+                        }
+                      />
+                    </div>
+                    <MessageList messages={Message.getMsg(room, messages)} />
+                  </>
+                | None => <p> {React.string("Select or create a room")} </p>
+                }}
+             </div>
+             <div className="c-text-area-wrapper">
+               <div className="c-text-area">
+                 <textarea
+                   rows=1
+                   placeholder="What's up?"
+                   value=text
+                   onKeyDown={event =>
+                     if (ReactEvent.Keyboard.keyCode(event) === 13) {
+                       ReactEvent.Keyboard.preventDefault(event);
+                       self.send(Send);
+                     }
+                   }
+                   onChange={event =>
+                     self.send(
+                       UpdateText(ReactEvent.Form.target(event)##value),
+                     )
+                   }
+                 />
+               </div>
+             </div>
+           </div>
+           <div className="p-avatars" />
+         </>
+       | _ => <div> {React.string("Connecting...")} </div>
+       }}
     </div>,
 };
 /**
  * This is a wrapper created to let this component be used from the new React api.
  * Please convert this component to a [@react.component] function and then remove this wrapping code.
  */
-let make =
-  ReasonReactCompat.wrapReasonReactForReact(
-    ~component, (reactProps: {. "children": 'children}) =>
-    make(reactProps##children)
-  );
-[@bs.obj]
-external makeProps: (~children: 'children, unit) => {. "children": 'children} =
-  "";
+// let make =
+//   ReasonReactCompat.wrapReasonReactForReact(
+//     ~component, (reactProps: {. "children": 'children}) =>
+//     make(reactProps##children)
+//   );
+// [@bs.obj]
+// external makeProps: (~children: 'children, unit) => {. "children": 'children};
 
 /* Loopback. Update self state */
 
