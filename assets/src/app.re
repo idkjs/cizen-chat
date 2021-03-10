@@ -39,17 +39,8 @@ type action =
   | Receive(string, string, string)
   | UpdateText(string);
 
-let component = ReasonReact.reducerComponent("App");
-
-let make = _children => {
-  ...component,
-  initialState: () => Connecting,
-  didMount: self => self.send(Connect),
-  reducer: (action, state) =>
-    switch (action) {
-    | Connect =>
-      ReasonReact.SideEffects(
-        self => {
+// let component = ReasonReact.reducerComponent("App");
+let handleConnect =(state,dispatch)=> {
           let socket = initSocket("/socket") |> connectSocket;
           let channel = socket |> initChannel("lounge:hello");
           let _ =
@@ -57,30 +48,47 @@ let make = _children => {
             |> putOn("room:message", (res: Abstract.any) => {
                  let {source, room_id, body}: Decode.message =
                    Decode.receive(res);
-                 self.send(Receive(source, room_id, body));
+                 dispatch(Receive(source, room_id, body));
                })
             |> putOn("room:setting", (res: Abstract.any) => {
                  let {room_id, name, color}: Decode.setting =
                    Decode.setting(res);
-                 self.send(ReceiveRoomSetting(room_id, name, color));
+                 dispatch(ReceiveRoomSetting(room_id, name, color));
                })
             |> putOn("avatar:profile", (res: Abstract.any) => {
                  let {avatar_id, name}: Decode.profile = Decode.profile(res);
-                 self.send(ReceiveAvatarProfile(avatar_id, name));
+                 dispatch(ReceiveAvatarProfile(avatar_id, name));
                })
             |> joinChannel
             |> putReceive("ok", (res: Abstract.any) => {
                  let welcome: Decode.welcome = Decode.welcome(res);
-                 self.send(
+                 dispatch(
                    Connected(welcome.id, welcome.name, socket, channel),
                  );
                });
           ();
-        },
-      )
-    | Connected(id, name, socket, channel) =>
-      ReasonReact.Update(
-        Ready({
+        };
+        let handleSend = (state, dispatch)=>{
+          switch (state) {
+          | Ready({id, channel, text, selected}) =>
+            switch (selected) {
+            | Some(room) =>
+              push(
+                "room:message",
+                {"source": id, "room_id": room, "body": text},
+                channel,
+              )
+              |> ignore;
+              self.send(Receive(id, room, text));
+              self.send(UpdateText(""));
+            | None => ()
+            }
+          | _ => ()
+          }
+      };
+     let handleConnected = (id, name, socket, channel,state, dispatch)=>{
+
+       let state = Ready({
           id,
           name,
           socket,
@@ -91,8 +99,17 @@ let make = _children => {
           messages: MessageMap.empty,
           text: "",
           selected: None,
-        }),
-      )
+        });
+        state
+     };
+[@react.component]
+let make = (~name, ~text, ~handleChange) => {
+  let (state, dispatch) = React.useReducer(reducer, Connecting);
+  // didMount: self => self.send(Connect),
+  reducer: (action, state) =>
+    switch (action) {
+    | Connect =>handleConnect(state,dispatch);
+    | Connected(id, name, socket, channel) => handleConnected(id, name, socket, channel,state, dispatch)
     | Send =>
       ReasonReact.SideEffects(
         self =>
@@ -325,13 +342,13 @@ let make = _children => {
  * This is a wrapper created to let this component be used from the new React api.
  * Please convert this component to a [@react.component] function and then remove this wrapping code.
  */
-// let make =
-//   ReasonReactCompat.wrapReasonReactForReact(
-//     ~component, (reactProps: {. "children": 'children}) =>
-//     make(reactProps##children)
-//   );
-// [@bs.obj]
-// external makeProps: (~children: 'children, unit) => {. "children": 'children};
+let make =
+  ReasonReactCompat.wrapReasonReactForReact(
+    ~component, (reactProps: {. "children": 'children}) =>
+    make(reactProps##children)
+  );
+[@bs.obj]
+external makeProps: (~children: 'children, unit) => {. "children": 'children};
 
 /* Loopback. Update self state */
 

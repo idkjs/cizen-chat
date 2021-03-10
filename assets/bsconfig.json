@@ -24,8 +24,7 @@
   },
   "suffix": ".bs.js",
   "warnings": {
-    "number": "+A-42-48",
-    "error": "+A-3-44-102-103"
+    "number": "+A-42-48"
   },
   "ppx-flags": []
 }
